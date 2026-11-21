@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InventarioVision AQP | ERP & Visión IA para Almacenes</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <!-- ACCESO / SELECCIÓN DE ROL -->
+    <div id="login-screen" class="login-wrapper">
+        <div class="login-card">
+            <div class="login-left">
+                <span class="erp-badge">AQP · Sillar &amp; Logística Inteligente</span>
+                <h2>InventarioVision AQP</h2>
+                <p class="muted-text">Gestión de inventarios con visión por computadora y datos abiertos para comercios y almacenes.</p>
+
+                <form id="form-login" class="login-form">
+                    <label for="login-rol">Ingresar como</label>
+                    <select id="login-rol">
+                        <option value="ADMIN">Administrador (Dashboard, Catálogo, Alertas, Fuentes Oficiales y Excel)</option>
+                        <option value="ALMACENERO">Almacenero (Escaneo IA de Estantes y Conteo Visual)</option>
+                    </select>
+
+                    <label for="login-usuario">Usuario</label>
+                    <input type="text" id="login-usuario" value="admin@inventariovision.pe" required>
+
+                    <label for="login-password">Contraseña</label>
+                    <input type="password" id="login-password" value="123456" required>
+
+                    <button type="submit" class="btn-primary full-width">Iniciar sesión</button>
+                </form>
+
+                <div class="quick-roles">
+                    <button type="button" class="btn-outline" onclick="accesoRapido('ADMIN')">Entrar como Admin</button>
+                    <button type="button" class="btn-outline" onclick="accesoRapido('ALMACENERO')">Entrar como Almacenero</button>
+                </div>
+            </div>
+
+            <div class="login-right">
+                <div class="login-banner-box">
+                    <img src="/static/img/almacen_estantes.jpg" alt="Almacén organizado con estanterías" class="login-hero-img">
+                    <span class="pill-light">Control en tiempo real</span>
+                    <h3>Audita tus estantes en segundos</h3>
+                    <p>Compara el conteo automático mediante imagen contra tu stock registrado y sincroniza referencias oficiales y ONGs.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- INTERFAZ PRINCIPAL ESTILO ERP MODULAR -->
+    <div id="app-shell" class="app-shell hidden">
+        <header class="erp-header">
+            <div class="erp-brand">
+                <div class="brand-mark">IV</div>
+                <div>
+                    <strong class="brand-title">InventarioVision AQP</strong>
+                    <span class="brand-sub">Control Visual de Almacén</span>
+                </div>
+            </div>
+
+            <nav class="module-tabs" id="sidebar-nav">
+                <button class="nav-item active" data-rol="ADMIN" data-vista="dashboard" onclick="mostrarVista('dashboard', this)">
+                    Dashboard
+                </button>
+                <button class="nav-item" data-rol="ALMACENERO" data-vista="escaneo" onclick="mostrarVista('escaneo', this)">
+                    Escaneo IA
+                </button>
+                <button class="nav-item" data-rol="ADMIN" data-vista="catalogo" onclick="mostrarVista('catalogo', this)">
+                    Catálogo
+                </button>
+                <button class="nav-item" data-rol="ADMIN" data-vista="alertas" onclick="mostrarVista('alertas', this)">
+                    Alertas
+                </button>
+                <button class="nav-item" data-rol="ADMIN" data-vista="fuentes" onclick="mostrarVista('fuentes', this)">
+                    Fuentes Oficiales
+                </button>
+            </nav>
+
+            <div class="erp-user-bar">
+                <a href="/api/reportes/excel" id="btn-exportar-excel" class="btn-primary">Exportar Excel (.xlsx)</a>
+                <div class="user-chip">
+                    <img src="/static/img/avatar_admin.png" id="perfil-avatar" alt="Avatar" class="avatar-img">
+                    <div class="user-meta">
+                        <span id="perfil-nombre">Administrador AQP</span>
+                        <small id="perfil-rol-badge">ADMIN</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-ghost" onclick="alternarRolRapido()" title="Cambiar entre Admin y Almacenero">Cambiar Rol</button>
+                <button type="button" class="btn-ghost" onclick="cerrarSesion()">Salir</button>
+            </div>
+        </header>
+
+        <div class="page-subbar">
+            <div>
+                <h1 id="titulo-vista">Panel General de Control</h1>
+                <p class="muted-text">Arequipa, Perú · Auditoría de stock, precios de referencia y alertas operativas</p>
+            </div>
+        </div>
+
+        <main class="container-main">
+            <!-- VISTA 1: DASHBOARD -->
+            <section id="vista-dashboard" class="vista active">
+                <div class="hero-strip card">
+                    <div>
+                        <span class="pill-teal">Módulo de Gestión</span>
+                        <h2>Visión clara de tu almacén y anaqueles</h2>
+                        <p class="muted-text">Revisa unidades disponibles, valorización en soles, diferencias detectadas por imagen y alertas pendientes.</p>
+                    </div>
+                    <div class="hero-photos">
+                        <img src="/static/img/control_almacen.jpg" alt="Supervisión de inventario en almacén">
+                        <img src="/static/img/equipo_analisis.jpg" alt="Análisis de datos de stock">
+                    </div>
+                </div>
+
+                <div class="kpi-grid">
+                    <div class="card kpi-card">
+                        <span class="kpi-title">Productos Registrados</span>
+                        <strong id="kpi-productos" class="kpi-number">0</strong>
+                    </div>
+                    <div class="card kpi-card">
+                        <span class="kpi-title">Unidades Totales</span>
+                        <strong id="kpi-unidades" class="kpi-number">0</strong>
+                    </div>
+                    <div class="card kpi-card">
+                        <span class="kpi-title">Valorización (S/)</span>
+                        <strong id="kpi-valor" class="kpi-number">S/ 0.00</strong>
+                    </div>
+                    <div class="card kpi-card accent-card">
+                        <span class="kpi-title">Alertas Pendientes</span>
+                        <strong id="kpi-alertas" class="kpi-number">0</strong>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="section-top">
+                        <h3>Historial de Escaneos y Auditoría</h3>
+                        <span class="muted-text">Stock registrado vs. Detección por imagen</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Producto</th>
+                                    <th>Stock Sistema</th>
+                                    <th>Detectado IA</th>
+                                    <th>Diferencia</th>
+                                    <th>Confianza</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-escaneos"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VISTA 2: ESCANEO IA -->
+            <section id="vista-escaneo" class="vista">
+                <div class="two-cols">
+                    <form id="form-escaneo" class="card">
+                        <span class="pill-teal">Módulo Operativo</span>
+                        <h3>Escaneo de Estante con Visión IA</h3>
+                        <p class="muted-text">Selecciona un producto y sube una foto del anaquel para contar unidades y auditar diferencias.</p>
+
+                        <label for="select-producto-escaneo">Producto a auditar</label>
+                        <select id="select-producto-escaneo" required></select>
+
+                        <label for="input-imagen">Imagen del estante o producto</label>
+                        <input type="file" id="input-imagen" accept="image/*" required>
+
+                        <button type="submit" class="btn-primary full-width">Procesar Imagen</button>
+
+                        <div class="sample-shelves-box">
+                            <span class="muted-text">Referencias visuales de anaqueles:</span>
+                            <div class="sample-shelves-row">
+                                <img src="/static/img/estante_tienda.jpg" alt="Estante con productos">
+                                <img src="/static/img/estante_etiquetado_ia.jpg" alt="Estante con detección visual">
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="card">
+                        <h3>Resultado del Análisis</h3>
+                        <p id="mensaje-escaneo" class="muted-text">Sube una imagen para ver el conteo y la auditoría automática.</p>
+                        <img id="escaneo-referencia" src="/static/img/escaneo_tablet.jpg" alt="Operador escaneando estantería" class="preview-img">
+                        <img id="preview-ia" src="" alt="Imagen procesada por visión artificial" class="preview-img hidden">
+                    </div>
+                </div>
+            </section>
+
+            <!-- VISTA 3: CATÁLOGO -->
+            <section id="vista-catalogo" class="vista">
+                <div class="card">
+                    <h3>Registrar Nuevo Producto</h3>
+                    <form id="form-nuevo-producto" class="form-grid-6">
+                        <input type="text" id="sku" placeholder="SKU (ej. AQP-DET-006)" required>
+                        <input type="text" id="nombre" placeholder="Nombre del producto" required>
+                        <select id="id_categoria" required>
+                            <option value="1">Abarrotes y Granos</option>
+                            <option value="2">Bebidas y Lácteos</option>
+                            <option value="3">Aceites y Conservas</option>
+                            <option value="4">Limpieza e Higiene</option>
+                        </select>
+                        <input type="number" id="stock_registrado" placeholder="Stock inicial" required>
+                        <input type="number" id="stock_minimo" placeholder="Stock mínimo" required>
+                        <input type="number" step="0.01" id="precio_unitario" placeholder="Precio tienda S/" required>
+                        <input type="number" step="0.01" id="precio_referencia_oficial" placeholder="Precio ref. oficial S/ (opcional)">
+                        <input type="text" id="fuente_oficial" placeholder="Fuente oficial (ej. MIDAGRI / CCIA / Boleta)">
+                        <input type="text" id="etiqueta_ia" placeholder="Etiqueta IA (ej. bolsa_detergente)" required>
+                        <button type="submit" class="btn-primary">Agregar al Catálogo</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="section-top">
+                        <h3>Catálogo y Precios de Referencia</h3>
+                        <div class="product-gallery-mini">
+                            <div class="prod-chip">
+                                <img src="/static/img/prod_arroz_costeno.jpg" alt="Arroz Extra Costeño 5kg">
+                                <span>Arroz Extra 5kg</span>
+                            </div>
+                            <div class="prod-chip">
+                                <img src="/static/img/prod_leche_gloria.jpg" alt="Leche Evaporada Gloria 400g">
+                                <span>Leche Gloria 400g</span>
+                            </div>
+                            <div class="prod-chip">
+                                <img src="/static/img/prod_aceite_primor.jpg" alt="Aceite Primor 900ml">
+                                <span>Aceite Primor 900ml</span>
+                            </div>
+                            <div class="prod-chip">
+                                <img src="/static/img/prod_azucar_zulka.jpg" alt="Azúcar Morena 1kg">
+                                <span>Azúcar Morena 1kg</span>
+                            </div>
+                            <div class="prod-chip">
+                                <img src="/static/img/prod_detergente_ariel.jpg" alt="Detergente Ariel 4kg">
+                                <span>Detergente Ariel 4kg</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>SKU</th>
+                                    <th>Producto</th>
+                                    <th>Categoría</th>
+                                    <th>Stock</th>
+                                    <th>Mínimo</th>
+                                    <th>Precio Tienda</th>
+                                    <th>Precio Ref. Oficial</th>
+                                    <th>Fuente Oficial</th>
+                                    <th>Valor Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-productos"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VISTA 4: ALERTAS -->
+            <section id="vista-alertas" class="vista">
+                <div class="card">
+                    <div class="section-top">
+                        <div>
+                            <h3>Alertas de Stock y Auditoría</h3>
+                            <p class="muted-text">Faltantes detectados por visión artificial o productos bajo stock mínimo.</p>
+                        </div>
+                        <img src="/static/img/ilustracion_inventario.png" alt="Ilustración de control de inventario" class="side-illustration">
+                    </div>
+                    <div id="lista-alertas" class="alerts-list"></div>
+                </div>
+            </section>
+
+            <!-- VISTA 5: FUENTES OFICIALES -->
+            <section id="vista-fuentes" class="vista">
+                <div class="card">
+                    <div class="section-top">
+                        <div>
+                            <h3>Fuentes Oficiales, Privadas y ONGs</h3>
+                            <p class="muted-text">Sincroniza referencias de Datos Abiertos Perú (MIDAGRI/INEI), Cámara de Comercio de Arequipa y Banco de Alimentos Perú.</p>
+                        </div>
+                        <button type="button" class="btn-primary" onclick="sincronizarFuentes()">Sincronizar Ahora</button>
+                    </div>
+                    <div class="fuentes-layout">
+                        <div id="resultado-fuentes" class="sync-box">Presiona "Sincronizar Ahora" para consultar y actualizar los datos de referencia.</div>
+                        <img src="/static/img/ilustracion_cajas.png" alt="Ilustración de logística y cajas" class="side-illustration">
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
