@@ -185,13 +185,21 @@ VALUES (5, 'STOCK_BAJO', 'ALTA', 'Stock crítico en Detergente Ariel 4kg (8 und.
 
         alerta_msg = ""
         if diferencia != 0:
+            diff_abs = abs(diferencia)
+            if diff_abs >= 5:
+                severidad = "ALTA"
+            elif diff_abs >= 2:
+                severidad = "MEDIA"
+            else:
+                severidad = "BAJA"
+
             alerta_msg = (
                 f"Inconsistencia detectada en '{prod['nombre']}': "
                 f"Sistema={stock_previo} und., Imagen IA={cantidad_detectada} und. (Diferencia: {diferencia:+d})."
             )
             cur.execute(
-                "INSERT INTO alertas (id_producto, tipo_alerta, severidad, mensaje) VALUES (?, 'INCONSISTENCIA_CONTEO', 'ALTA', ?)",
-                (id_producto, alerta_msg),
+                "INSERT INTO alertas (id_producto, tipo_alerta, severidad, mensaje) VALUES (?, 'INCONSISTENCIA_CONTEO', ?, ?)",
+                (id_producto, severidad, alerta_msg),
             )
 
         conn.commit()
