@@ -1,0 +1,7 @@
+*.pt
+Add-Content .gitignore "__pycache__/"
+Add-Content .gitignore "*.pyc"
+Add-Content .gitignore ".pytest_cache/"__pycache__/
+*.pyc
+.pytest_cache/
+frontend/static/uploads/*WhatsApp*
