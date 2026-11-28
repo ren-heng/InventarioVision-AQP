@@ -89,7 +89,13 @@ classDiagram
     }
     class VisionRecognitionService {
         -str upload_folder
+        -str model_name
+        -int max_ancho_envio
         +analizar_imagen_inventario(image_path, etiqueta) dict
+        -_preparar_imagen_para_ia(image_path) tuple
+        -_contar_con_gemini(image_path, etiqueta_esperada) tuple
+        -_contar_con_opencv_fallback(image_path) tuple
+        -_generar_imagen_anotada(image_path, cantidad, confianza, modo) str
     }
     class ExternalDataAggregatorService {
         +sincronizar_fuentes_oficiales() dict
@@ -98,4 +104,18 @@ classDiagram
     InventarioDAO --> ProductoDTO : gestiona
     InventarioDAO --> VisionRecognitionService : audita_con
     InventarioDAO --> ExternalDataAggregatorService : sincroniza_con
+```
+
+## 3. Flujo de Reconocimiento con Resiliencia y Fallback (Mermaid)
+```mermaid
+flowchart TD
+    A[POST /api/escanear con imagen y producto] --> B[VisionRecognitionService.analizar_imagen_inventario]
+    B --> C[Redimensionar en memoria a max 1024px si aplica]
+    C --> D{Consultar gemini-3.8-flash con prompt estricto de marca/producto}
+    D -- Exito JSON --> E[Validar cantidad >= 0 y confianza, marcar modo GEMINI]
+    D -- Error 429 / 503 / Red --> F[Activar _contar_con_opencv_fallback, marcar modo OPENCV-FALLBACK]
+    E --> G[Generar imagen anotada y calcular diferencia vs stock_registrado]
+    F --> G
+    G --> H[InventarioDAO registra escaneo y genera alerta si aplica]
+    H --> I[Retornar resultado de auditoria a la interfaz web]
 ```
